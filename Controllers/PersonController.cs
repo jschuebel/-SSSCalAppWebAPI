@@ -14,6 +14,7 @@ using SSSCalApp.Core.ApplicationService;
 using SSSCalAppWebAPI.Models;
 
 using System.Linq.Dynamic.Core;
+using Newtonsoft.Json;
 
 namespace SSSCalAppWebAPI.Controllers
 {
@@ -88,21 +89,21 @@ namespace SSSCalAppWebAPI.Controllers
         [HttpGet("{id}")]
         public ActionResult<coreevent.Person> Get(int id)
         {
-            //return NotFound("Product not found");
-            //return BadRequest(ModelState);
-            //Person p=null;// = new Person();
-            //p.Name="frank smith";
-            //return p;
-            //return Ok(new { Message="test" });
             try {
                 if (!ModelState.IsValid)
                     throw new ArgumentException("ModelState must be invalid", nameof(ModelState));
-                    var np = _personService.FindPersonById(id);
+                var np = _personService.FindPersonById(id);
+                if (np==null)
+                    return NotFound("Person not found");
                 return np;
             }
             catch(Exception ex) {
 
-              ModelState.AddModelError("Person:Get", ex.Message);
+                var sb = new System.Text.StringBuilder();
+                while (ex!=null) {
+                    ModelState.AddModelError("Person:Get", ex.Message);
+                    ex=ex.InnerException;
+                }
               return BadRequest(ModelState);  
             }
         
@@ -112,58 +113,75 @@ namespace SSSCalAppWebAPI.Controllers
         // POST api/values
         [HttpPost]
         [Authorize]
-        public HttpResponseMessage Post([FromBody] coreevent.Person value)
+        public ActionResult<coreevent.Person> Post([FromBody] coreevent.Person value)
         {
-              try
+            try
             {
-                //        var entity = TheModelFactory.Parse(courseModel);
-
-                //        if (entity == null) Request.CreateErrorResponse(HttpStatusCode.BadRequest, "Could not read subject/tutor from body");
-
-                //        if (TheRepository.Insert(entity) && TheRepository.SaveAll())
-                //        {
-                //            return Request.CreateResponse(HttpStatusCode.Created, TheModelFactory.Create(entity));
-                //        }
-                //        else
-                //        {
-                var resp = new HttpResponseMessage()
-                {
-                    StatusCode = HttpStatusCode.Created,
-                    Content = new StringContent("[{\"Name\":\"ABC\"},[{\"A\":\"1\"},{\"B\":\"2\"},{\"C\":\"3\"}]]")
-                };
-
-                //resp.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
-                return resp;
-                //return Request.CreateErrorResponse(HttpStatusCode.BadRequest, "Could not save to the database.");
-        //        }
+                //string authorization = Request.Headers["Authorization"]; 
+                if (!ModelState.IsValid)
+                    throw new ArgumentException("ModelState must be invalid", nameof(ModelState));
+                var np = _personService.CreatePerson(value);
+                return Ok(np);
             }
             catch (Exception ex)
             {
-                //****remove build warnings
-                var exhld = ex;
-                //****remove build warnings
-
-                
-                //return Request.CreateErrorResponse(HttpStatusCode.BadRequest, ex);
-
-                return new HttpResponseMessage()
-                {
-                    StatusCode = HttpStatusCode.BadRequest
-                };
+                var sb = new System.Text.StringBuilder();
+                while (ex!=null) {
+                    ModelState.AddModelError("Person:Post", ex.Message);
+                    ex=ex.InnerException;
+                }
+                return BadRequest(ModelState);  
+               
             }
         }
 
         // PUT api/values/5
+        [Authorize]
         [HttpPut("{id}")]
-        public void Put(int id, [FromBody] coreevent.Person value)
+        public async Task<IActionResult> Put(int id, [FromBody] coreevent.Person item)
         {
+            try 
+            {
+                if (!ModelState.IsValid)
+                    throw new ArgumentException("ModelState must be invalid", nameof(ModelState));
+                if (id != item.Id)
+                    return NotFound("Person not found"); 
+                var np = _personService.UpdatePerson(item);
+                return Ok(np);
+            }
+            catch (Exception ex)
+            {
+                var sb = new System.Text.StringBuilder();
+                while (ex!=null) {
+                    ModelState.AddModelError("Person:Put", ex.Message);
+                    ex=ex.InnerException;
+                }
+                return BadRequest(ModelState);  
+               
+            }
+
+
         }
 
         // DELETE api/values/5
         [HttpDelete("{id}")]
         [Authorize]
-        public void Delete(int id)
+        public async Task<IActionResult> Delete(int id)
         {
+            try {
+                if (! _personService.DeletePerson(id))
+                    return NotFound("Person not found");
+                return Ok();
+            }
+            catch(Exception ex) {
+
+                var sb = new System.Text.StringBuilder();
+                while (ex!=null) {
+                    ModelState.AddModelError("Person:Get", ex.Message);
+                    ex=ex.InnerException;
+                }
+              return BadRequest(ModelState);  
+            }
         }
     }
 }

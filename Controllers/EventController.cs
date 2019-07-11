@@ -140,12 +140,6 @@ namespace SSSCalAppWebAPI.Controllers
         [HttpGet("people/{id}")]
         public ActionResult<List<coreevent.Person>> GetPeopleForEvent(int id)
         {
-            //return NotFound("Product not found");
-            //return BadRequest(ModelState);
-            //Person p=null;// = new Person();
-            //p.Name="frank smith";
-            //return p;
-            //return Ok(new { Message="test" });
             try {
                 if (!ModelState.IsValid)
                     throw new ArgumentException("ModelState must be invalid", nameof(ModelState));
@@ -162,58 +156,75 @@ namespace SSSCalAppWebAPI.Controllers
         }
 
         // POST api/values
+        [Authorize]
         [HttpPost]
-        public HttpResponseMessage Post([FromBody] coreevent.Event value)
+        public ActionResult<coreevent.Event> Post([FromBody] coreevent.Event value)
         {
-              try
+            try
             {
-                //        var entity = TheModelFactory.Parse(courseModel);
-
-                //        if (entity == null) Request.CreateErrorResponse(HttpStatusCode.BadRequest, "Could not read subject/tutor from body");
-
-                //        if (TheRepository.Insert(entity) && TheRepository.SaveAll())
-                //        {
-                //            return Request.CreateResponse(HttpStatusCode.Created, TheModelFactory.Create(entity));
-                //        }
-                //        else
-                //        {
-                var resp = new HttpResponseMessage()
-                {
-                    StatusCode = HttpStatusCode.Created,
-                    Content = new StringContent("[{\"Name\":\"ABC\"},[{\"A\":\"1\"},{\"B\":\"2\"},{\"C\":\"3\"}]]")
-                };
-
-                //resp.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
-                return resp;
-                //return Request.CreateErrorResponse(HttpStatusCode.BadRequest, "Could not save to the database.");
-        //        }
+                //string authorization = Request.Headers["Authorization"]; 
+                if (!ModelState.IsValid)
+                    throw new ArgumentException("ModelState must be invalid", nameof(ModelState));
+                var np = _eventService.CreateEvent(value);
+                return Ok(np);
             }
             catch (Exception ex)
             {
-                //****remove build warnings
-                var exhld = ex;
-                //****remove build warnings
-
-                //return Request.CreateErrorResponse(HttpStatusCode.BadRequest, ex);
-
-                return new HttpResponseMessage()
-                {
-                    StatusCode = HttpStatusCode.BadRequest
-                };
+                var sb = new System.Text.StringBuilder();
+                while (ex!=null) {
+                    ModelState.AddModelError("Event:Post", ex.Message);
+                    ex=ex.InnerException;
+                }
+                return BadRequest(ModelState);  
+               
             }
         }
 
         // PUT api/values/5
+        [Authorize]
         [HttpPut("{id}")]
-        public void Put(int id, [FromBody] coreevent.Event value)
+        public async Task<IActionResult> Put(int id, [FromBody] coreevent.Event item)
         {
+            try 
+            {
+                if (!ModelState.IsValid)
+                    throw new ArgumentException("ModelState must be invalid", nameof(ModelState));
+                if (id != item.Id)
+                    return NotFound("Event not found"); 
+                var np = _eventService.UpdateEvent(item);
+                return Ok(np);
+            }
+            catch (Exception ex)
+            {
+                var sb = new System.Text.StringBuilder();
+                while (ex!=null) {
+                    ModelState.AddModelError("Event:Put", ex.Message);
+                    ex=ex.InnerException;
+                }
+                return BadRequest(ModelState);  
+               
+            }
         }
 
         // DELETE api/values/5
         [HttpDelete("{id}")]
         [Authorize]
-        public void Delete(int id)
+        public async Task<IActionResult> Delete(int id)
         {
+           try {
+                if (! _eventService.DeleteEvent(id))
+                    return NotFound("Event not found");
+                return Ok();
+            }
+            catch(Exception ex) {
+
+                var sb = new System.Text.StringBuilder();
+                while (ex!=null) {
+                    ModelState.AddModelError("Event:Get", ex.Message);
+                    ex=ex.InnerException;
+                }
+              return BadRequest(ModelState);  
+            }
         }
     }
 }
