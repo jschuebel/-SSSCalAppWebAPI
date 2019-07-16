@@ -38,6 +38,9 @@ namespace SSSCalAppWebAPI
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+             var cfgbuilder = new ConfigurationBuilder()
+                .AddEnvironmentVariables()
+                .Build();
 
            var audienceConfig = Configuration.GetSection("Audience");
 
@@ -81,8 +84,10 @@ namespace SSSCalAppWebAPI
                     options => options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
                 );
 
+//bad practice : use user secrets or environment vars             options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"))
+
             services.AddDbContext<PersonContext>(options =>
-             options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"))
+             options.UseSqlServer(cfgbuilder.GetConnectionString("DefaultConnection"))
            );
 
            services.AddScoped<IPersonRepository, PersonRepository>();
@@ -95,7 +100,8 @@ namespace SSSCalAppWebAPI
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
-            if (env.IsDevelopment())
+
+             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
             }
