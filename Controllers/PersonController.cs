@@ -67,12 +67,18 @@ namespace SSSCalAppWebAPI.Controllers
                     string filtering="true";
                     try {
                         filtering = fp.GetFiltering(srch);
-                    } catch {filtering="true";}
+                    } catch(Exception fex) {
+                        ModelState.AddModelError("Person:Get:FilterParse", fex.Message);
+                        return BadRequest(ModelState);  
+                    }
 
                     var sorting = "true";
                     try {
                         sorting = coreevent.FilterParsing<coreevent.Person>.GetSorting(srch);
-                    } catch {sorting="true";}
+                    } catch(Exception sex) {
+                        ModelState.AddModelError("Person:Get:SortParse", sex.Message);
+                        return BadRequest(ModelState);  
+                    }
                     IQueryable<coreevent.Person> query =evts.AsQueryable().Where(filtering).OrderBy(sorting);
 
                     int RowCount = 0;
