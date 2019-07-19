@@ -79,8 +79,15 @@ namespace SSSCalAppWebAPI.Controllers
                     //Most javascript grids are 1 based page
                     if (srch.Page>0) srch.Page--;
                     var fp = new coreevent.FilterParsing<coreevent.Event>();
-                    var filtering = fp.GetFiltering(srch);
-                    var sorting = coreevent.FilterParsing<coreevent.Event>.GetSorting(srch);
+                    string filtering="true";
+                    try {
+                        filtering = fp.GetFiltering(srch);
+                    } catch {filtering="true";}
+
+                    var sorting = "true";
+                    try {
+                        sorting = coreevent.FilterParsing<coreevent.Event>.GetSorting(srch);
+                    } catch {sorting="true";}
                     
                     //if filter and date range
                     if (srch.FilterObjectWrapper.FilterObjects.Count==2) {
@@ -95,10 +102,15 @@ namespace SSSCalAppWebAPI.Controllers
                     }
                     IQueryable<coreevent.Event> query =evts.AsQueryable().Where(filtering).OrderBy(sorting);
 
-                    int RowCount = query.Count();
-                    int skip = srch.Page * srch.PageSize;
-                    var newList = query.Skip(skip).Take(srch.PageSize).ToList();
-            
+                    int RowCount = 0;
+                    var newList = new List<coreevent.Event>();
+                    try {
+                        RowCount = query.Count();
+                        int skip = srch.Page * srch.PageSize;
+                        newList = query.Skip(skip).Take(srch.PageSize).ToList();
+                    }
+                    catch {}
+
                     //var newList = query.ToList();
                     var newRes = new FilterDTO<IEnumerable<coreevent.Event>>() { total=RowCount, data=newList };
                     //new { total = mdl.RowCount, data = res }
