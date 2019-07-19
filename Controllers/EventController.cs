@@ -59,6 +59,7 @@ namespace SSSCalAppWebAPI.Controllers
         public ActionResult<FilterDTO<IEnumerable<coreevent.Event>>> Get([ModelBinder(binderType: typeof(SearchBinder))]coreevent.SearchRequest srch)
         {
             try {
+                //need to pull back all for all request or adjusting birthday dates for queires
               var evts = _eventService.GetAllEvents().ToList();
               if ((srch==null) || (srch!=null 
                                         && srch.FilterObjectWrapper.FilterObjects.Count==0 
@@ -82,12 +83,18 @@ namespace SSSCalAppWebAPI.Controllers
                     string filtering="true";
                     try {
                         filtering = fp.GetFiltering(srch);
-                    } catch {filtering="true";}
+                    } catch(Exception fex) {
+                        ModelState.AddModelError("Person:Get:FilterParse", fex.Message);
+                        return BadRequest(ModelState);  
+                    }
 
                     var sorting = "true";
                     try {
                         sorting = coreevent.FilterParsing<coreevent.Event>.GetSorting(srch);
-                    } catch {sorting="true";}
+                    } catch(Exception sex) {
+                        ModelState.AddModelError("Person:Get:SortParse", sex.Message);
+                        return BadRequest(ModelState);  
+                    }
                     
                     //if filter and date range
                     if (srch.FilterObjectWrapper.FilterObjects.Count==2) {
@@ -100,6 +107,7 @@ namespace SSSCalAppWebAPI.Controllers
                             evts.AddRange(cevt);
                         }
                     }
+
                     IQueryable<coreevent.Event> query =evts.AsQueryable().Where(filtering).OrderBy(sorting);
 
                     int RowCount = 0;
