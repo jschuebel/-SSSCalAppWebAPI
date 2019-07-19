@@ -76,6 +76,8 @@ namespace SSSCalAppWebAPI
             services.AddCors(options => options.AddPolicy("ApiCorsPolicy", builder =>
                 {
                     builder.WithOrigins("http://localhost:52293").AllowAnyMethod().AllowAnyHeader();
+                    builder.WithOrigins("http://localhost:5000").AllowAnyMethod().AllowAnyHeader();
+                    builder.WithOrigins("https://localhost:5001").AllowAnyMethod().AllowAnyHeader();
                 }));
 
             services.AddMvc()
