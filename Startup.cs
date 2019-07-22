@@ -44,7 +44,13 @@ namespace SSSCalAppWebAPI
 
            var audienceConfig = Configuration.GetSection("Audience");
 
-            var signingKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(audienceConfig["Secret"]));
+
+        var workingconnvalue = cfgbuilder.GetConnectionString("DefaultConnection");
+        var envAudConfig = cfgbuilder.GetSection("Audience").GetChildren();
+        var Secret = envAudConfig.Where(v=>v.Key=="Secret").FirstOrDefault().Value;
+        
+
+            var signingKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(Secret));
             var authKey = audienceConfig["ocelotkey"];
             var tokenValidationParameters = new TokenValidationParameters
             {
@@ -78,6 +84,8 @@ namespace SSSCalAppWebAPI
                     builder.WithOrigins("http://localhost:52293").AllowAnyMethod().AllowAnyHeader();
                     builder.WithOrigins("http://localhost:5000").AllowAnyMethod().AllowAnyHeader();
                     builder.WithOrigins("https://localhost:5001").AllowAnyMethod().AllowAnyHeader();
+                    builder.WithOrigins("http://localhost:5020").AllowAnyMethod().AllowAnyHeader();
+                    builder.WithOrigins("https://localhost:5021").AllowAnyMethod().AllowAnyHeader();
                 }));
 
             services.AddMvc()
