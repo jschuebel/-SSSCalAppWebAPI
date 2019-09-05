@@ -15,6 +15,7 @@ using SSSCalAppWebAPI.Models;
 
 using System.Linq.Dynamic.Core;
 using System.Globalization;
+using Newtonsoft.Json;
 
 namespace SSSCalAppWebAPI.Controllers
 {
@@ -56,7 +57,7 @@ namespace SSSCalAppWebAPI.Controllers
 
         // GET api/values
         [HttpGet]
-        public ActionResult<FilterDTO<IEnumerable<coreevent.Event>>> Get([ModelBinder(binderType: typeof(SearchBinder))]coreevent.SearchRequest srch)
+        public ActionResult<IEnumerable<coreevent.Event>> Get([ModelBinder(binderType: typeof(SearchBinder))]coreevent.SearchRequest srch)
         {
             try {
                 //need to pull back all for all request or adjusting birthday dates for queires
@@ -67,8 +68,8 @@ namespace SSSCalAppWebAPI.Controllers
                                         && srch.Page==0
                                         && srch.PageSize==25))
                      { //return Ok(evts);
-                       var newRes = new FilterDTO<IEnumerable<coreevent.Event>>() { total=evts.Count, data=evts };
-                        return Ok(newRes);
+                        HttpContext.Response.Headers.Add("Paging-TotalRecords", JsonConvert.SerializeObject (evts.Count));
+                        return Ok(evts);
                     }
                 else {
                     foreach (var item in evts)
@@ -120,9 +121,9 @@ namespace SSSCalAppWebAPI.Controllers
                     catch {}
 
                     //var newList = query.ToList();
-                    var newRes = new FilterDTO<IEnumerable<coreevent.Event>>() { total=RowCount, data=newList };
+                    HttpContext.Response.Headers.Add("Paging-TotalRecords", JsonConvert.SerializeObject (RowCount));
                     //new { total = mdl.RowCount, data = res }
-                    return Ok(newRes);
+                    return Ok(newList);
                 }
             }
             catch(Exception ex) {

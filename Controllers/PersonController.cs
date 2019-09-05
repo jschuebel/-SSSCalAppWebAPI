@@ -46,7 +46,7 @@ namespace SSSCalAppWebAPI.Controllers
         }
  */        
         [HttpGet]
-        public ActionResult<FilterDTO<IEnumerable<coreevent.Person>>> Get([ModelBinder(binderType: typeof(SearchBinder))]coreevent.SearchRequest srch)
+        public ActionResult<IEnumerable<coreevent.Person>> Get([ModelBinder(binderType: typeof(SearchBinder))]coreevent.SearchRequest srch)
         {
             try {
               var evts = _personService.GetAllPersons().ToList();
@@ -56,8 +56,8 @@ namespace SSSCalAppWebAPI.Controllers
                                         && srch.Page==0
                                         && srch.PageSize==25))
                     {//return Ok(evts);
-                        var newRes = new FilterDTO<IEnumerable<coreevent.Person>>() { total=evts.Count, data=evts };
-                        return Ok(newRes);
+                        HttpContext.Response.Headers.Add("Paging-TotalRecords", JsonConvert.SerializeObject (evts.Count));
+                        return Ok(evts);
                     }
                 else {
 
@@ -89,11 +89,14 @@ namespace SSSCalAppWebAPI.Controllers
                         newList = query.Skip(skip).Take(srch.PageSize).ToList();
                     }
                     catch {}
+
+                    // Setting Header  
+                    HttpContext.Response.Headers.Add("Paging-TotalRecords", JsonConvert.SerializeObject (RowCount));  
             
                     //var newList = query.ToList();
-                    var newRes = new FilterDTO<IEnumerable<coreevent.Person>>() { total=RowCount, data=newList };
+                   // var newRes = new FilterDTO<IEnumerable<coreevent.Person>>() { total=RowCount, data=newList };
                     //new { total = mdl.RowCount, data = res }
-                    return Ok(newRes);
+                    return Ok(newList);
                 }
             }
             catch(Exception ex) {
@@ -155,15 +158,17 @@ namespace SSSCalAppWebAPI.Controllers
 
         // PUT api/values/5
         [Authorize]
-        [HttpPut("{id}")]
-        public async Task<IActionResult> Put(int id, [FromBody] coreevent.Person item)
+//        [HttpPut("{id}")]
+//        public async Task<IActionResult> Put(int id, [FromBody] coreevent.Person item)
+        [HttpPut]
+        public async Task<IActionResult> Put([FromBody] coreevent.Person item)
         {
-            try 
+         try 
             {
                 if (!ModelState.IsValid)
                     throw new ArgumentException("ModelState must be invalid", nameof(ModelState));
-                if (id != item.Id)
-                    return NotFound("Person not found"); 
+//                if (id != item.Id)
+//                    return NotFound("Person not found"); 
                 var np = _personService.UpdatePerson(item);
                 return Ok(np);
             }
