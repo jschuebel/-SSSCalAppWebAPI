@@ -64,7 +64,15 @@ namespace SSSCalAppWebAPI
                 ClockSkew = TimeSpan.Zero,
                 RequireExpirationTime = true,
             };
+    services.AddAuthentication("Bearer")
+            .AddJwtBearer("Bearer", options =>
+            {
+                options.Authority = "http://localhost:5000";
+                options.RequireHttpsMetadata = false;
 
+                options.Audience = "api1";
+            });
+/*
             services.AddAuthentication(o =>
             {
                 o.DefaultAuthenticateScheme = authKey;
@@ -75,10 +83,10 @@ namespace SSSCalAppWebAPI
                  x.RequireHttpsMetadata = false;
                  x.TokenValidationParameters = tokenValidationParameters;
              });
+*/
 
 
-
-            services.AddCors(); // Make sure you call this previous to AddMvc
+           // services.AddCors(); // Make sure you call this previous to AddMvc
             services.AddCors(options => options.AddPolicy("ApiCorsPolicy", builder =>
                 {
                     builder.WithOrigins("http://localhost:52293").AllowAnyMethod().AllowAnyHeader();
@@ -86,13 +94,19 @@ namespace SSSCalAppWebAPI
                     builder.WithOrigins("https://localhost:5001").AllowAnyMethod().AllowAnyHeader();
                     builder.WithOrigins("http://localhost:5020").AllowAnyMethod().AllowAnyHeader();
                     builder.WithOrigins("https://localhost:5021").AllowAnyMethod().AllowAnyHeader();
+                    builder.WithOrigins("http://localhost:8080").AllowAnyMethod().AllowAnyHeader();
+                    builder.WithOrigins("http://localhost:803").AllowAnyMethod().AllowAnyHeader();
+                    builder.WithOrigins("https://www.schuebelsoftware.com").AllowAnyMethod().AllowAnyHeader();
                 }));
+
+          
 
             services.AddMvc()
                 .SetCompatibilityVersion(CompatibilityVersion.Version_2_1)
-                .AddJsonOptions(
-                    options => options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
-                );
+                .AddJsonOptions(options => {
+                    options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
+                    options.SerializerSettings.MaxDepth = 3;
+                });
 
 //bad practice : use user secrets or environment vars             options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"))
 
@@ -102,8 +116,10 @@ namespace SSSCalAppWebAPI
 
            services.AddScoped<IPersonRepository, PersonRepository>();
            services.AddScoped<IEventRepository, EventRepository>();
+           services.AddScoped<IGroupRepository, GroupRepository>();
            services.AddScoped<IPersonService, PersonService>();
            services.AddScoped<IEventService, EventService>();
+           services.AddScoped<IGroupService, GroupService>();
           
         }
 

@@ -68,7 +68,8 @@ namespace SSSCalAppWebAPI.Controllers
                                         && srch.Page==0
                                         && srch.PageSize==25))
                      { //return Ok(evts);
-                        HttpContext.Response.Headers.Add("Paging-TotalRecords", JsonConvert.SerializeObject (evts.Count));
+                            HttpContext.Response.Headers.Add("Access-Control-Expose-Headers", "Paging-TotalRecords");
+                         HttpContext.Response.Headers.Add("Paging-TotalRecords", JsonConvert.SerializeObject (evts.Count));
                         return Ok(evts);
                     }
                 else {
@@ -121,6 +122,7 @@ namespace SSSCalAppWebAPI.Controllers
                     catch {}
 
                     //var newList = query.ToList();
+                    HttpContext.Response.Headers.Add("Access-Control-Expose-Headers", "Paging-TotalRecords");
                     HttpContext.Response.Headers.Add("Paging-TotalRecords", JsonConvert.SerializeObject (RowCount));
                     //new { total = mdl.RowCount, data = res }
                     return Ok(newList);
@@ -158,6 +160,7 @@ namespace SSSCalAppWebAPI.Controllers
         //Errors = ModelState.SelectMany(x => x.Value.Errors)            .Select(x => x.ErrorMessage).ToArray();
         }
 
+        //** /api/event/people/1
         [HttpGet("people/{id}")]
         public ActionResult<List<coreevent.Person>> GetPeopleForEvent(int id)
         {
@@ -166,6 +169,27 @@ namespace SSSCalAppWebAPI.Controllers
                     throw new ArgumentException("ModelState must be invalid", nameof(ModelState));
                     var np = _eventService.GetEventByIdWithPeople(id);
                 return np;
+            }
+            catch(Exception ex) {
+
+              ModelState.AddModelError("Person:Get", ex.Message);
+              return BadRequest(ModelState);  
+            }
+        
+        //Errors = ModelState.SelectMany(x => x.Value.Errors)            .Select(x => x.ErrorMessage).ToArray();
+        }
+
+        //** /api/event/currentyearly
+        [HttpGet("currentyearly")]
+        public ActionResult<List<coreevent.Person>> GetCurrentEvents()
+        {
+            try {
+                if (!ModelState.IsValid)
+                    throw new ArgumentException("ModelState must be invalid", nameof(ModelState));
+                  var evts = _eventService.GetAllEvents().Where(x=>
+                        (x.TopicId!=1 && x.Date!=null && x.Date>=DateTime.Now) ||
+                        (x.TopicId==1 && x.Date!=null && x.Date.Value.Month>=DateTime.Now.Month)).OrderBy(x=>x.Date.Value.Month);
+                return Ok(evts.ToList());
             }
             catch(Exception ex) {
 

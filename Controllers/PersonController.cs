@@ -56,7 +56,8 @@ namespace SSSCalAppWebAPI.Controllers
                                         && srch.Page==0
                                         && srch.PageSize==25))
                     {//return Ok(evts);
-                        HttpContext.Response.Headers.Add("Paging-TotalRecords", JsonConvert.SerializeObject (evts.Count));
+                        HttpContext.Response.Headers.Add("Access-Control-Expose-Headers", "Paging-TotalRecords");
+                         HttpContext.Response.Headers.Add("Paging-TotalRecords", JsonConvert.SerializeObject (evts.Count));
                         return Ok(evts);
                     }
                 else {
@@ -91,6 +92,7 @@ namespace SSSCalAppWebAPI.Controllers
                     catch {}
 
                     // Setting Header  
+                    HttpContext.Response.Headers.Add("Access-Control-Expose-Headers", "Paging-TotalRecords");
                     HttpContext.Response.Headers.Add("Paging-TotalRecords", JsonConvert.SerializeObject (RowCount));  
             
                     //var newList = query.ToList();
@@ -108,6 +110,7 @@ namespace SSSCalAppWebAPI.Controllers
 
         // GET api/values/5
         [HttpGet("{id}")]
+        [Authorize]
         public ActionResult<coreevent.Person> Get(int id)
         {
             try {
