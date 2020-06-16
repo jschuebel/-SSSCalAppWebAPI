@@ -64,9 +64,9 @@ namespace SSSCalAppWebAPI.Controllers
                 if (!ModelState.IsValid)
                     throw new ArgumentException("ModelState must be invalid", nameof(ModelState));
 
-                if (startDate.Value.Month>=11 && endDate.Value.Month==1)
+                if (startDate.Value.Month>=11 && endDate.Value.Month<3)
                   evts = _eventService.GetAllEvents().Where(x=>
-                        x.TopicId==1 && x.Date!=null && (x.Date.Value.Month>=startDate.Value.Month || x.Date.Value.Month == endDate.Value.Month)).ToList();
+                        x.TopicId==1 && x.Date!=null && (x.Date.Value.Month>=startDate.Value.Month || x.Date.Value.Month <= endDate.Value.Month)).ToList();
                 else
                   evts = _eventService.GetAllEvents().Where(x=>
                         x.TopicId==1 && x.Date!=null && x.Date.Value.Month>=startDate.Value.Month && x.Date.Value.Month <= endDate.Value.Month).ToList();
