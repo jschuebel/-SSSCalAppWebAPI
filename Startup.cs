@@ -96,6 +96,8 @@ namespace SSSCalAppWebAPI
                     builder.WithOrigins("https://localhost:5021").AllowAnyMethod().AllowAnyHeader();
                     builder.WithOrigins("http://localhost:8080").AllowAnyMethod().AllowAnyHeader();
                     builder.WithOrigins("http://localhost:803").AllowAnyMethod().AllowAnyHeader();
+                    builder.WithOrigins("http://blz.schuebelsoftware.com").AllowAnyMethod().AllowAnyHeader();
+                    builder.WithOrigins("http://vue.schuebelsoftware.com").AllowAnyMethod().AllowAnyHeader();
                     builder.WithOrigins("https://www.schuebelsoftware.com").AllowAnyMethod().AllowAnyHeader();
                 }));
 
