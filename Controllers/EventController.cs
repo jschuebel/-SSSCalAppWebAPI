@@ -75,8 +75,8 @@ namespace SSSCalAppWebAPI.Controllers
                     evts.AddRange(cevt);
 
                 if (startDate.Value.Month>=11 && endDate.Value.Month<3)
-                  evts = _eventService.GetAllEvents().Where(x=>
-                        x.TopicId!=1 && x.Date!=null && x.RepeatYearly==true && (x.Date.Value.Month>=startDate.Value.Month || x.Date.Value.Month <= endDate.Value.Month)).ToList();
+                  evts.AddRange(_eventService.GetAllEvents().Where(x=>
+                        x.TopicId!=1 && x.Date!=null && x.RepeatYearly==true && (x.Date.Value.Month>=startDate.Value.Month || x.Date.Value.Month <= endDate.Value.Month)).ToList());
                 else
                     evts.AddRange(_eventService.GetAllEvents().Where(x=> 
                         (x.TopicId!=1 && x.Date!=null && x.RepeatYearly==true && x.Date.Value.Month>=startDate.Value.Month && x.Date.Value.Month <= endDate.Value.Month)).ToList());
