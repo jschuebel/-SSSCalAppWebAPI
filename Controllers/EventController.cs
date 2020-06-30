@@ -54,7 +54,7 @@ namespace SSSCalAppWebAPI.Controllers
             }
             return DateTime.Parse(param, new CultureInfo("en-US"));
         }
-
+//http://www.schuebelsoftware.com/SSSCalCoreApi/api/event/calendarsearch?startDate=5/31/2020&endDate=7/4/2020
 //http://www.schuebelsoftware.com/SSSCalCoreApi/api/event?page=1&pageSize=9999&sort[0][field]=userName&sort[0][dir]=asc&filter[logic]=and&filter[filters][0][field]=Date&filter[filters][0][operator]=gte&filter[filters][0][value]=11-29-2020&filter[logic]=and&filter[filters][1][field]=Date&filter[filters][1][operator]=lte&filter[filters][1][value]=1-2-2021
         [HttpGet("calendarsearch")]
         public ActionResult<List<coreevent.Event>> GetCalendar(DateTime? startDate,DateTime? endDate)
@@ -63,6 +63,10 @@ namespace SSSCalAppWebAPI.Controllers
              try {
                 if (!ModelState.IsValid)
                     throw new ArgumentException("ModelState must be invalid", nameof(ModelState));
+
+                  var tevts = _eventService.GetAllEvents().Where(x=>
+                        x.TopicId!=1 && x.Date!=null && x.Date.Value >=startDate.Value).ToList();
+
 
                 if (startDate.Value.Month>=11 && endDate.Value.Month<3)
                   evts = _eventService.GetAllEvents().Where(x=>
@@ -74,13 +78,22 @@ namespace SSSCalAppWebAPI.Controllers
                     var cevt = _eventService.GetCalculatedEventsByDateRange(startDate.Value, endDate.Value);
                     evts.AddRange(cevt);
 
-                if (startDate.Value.Month>=11 && endDate.Value.Month<3)
+                if (startDate.Value.Month>=11 && endDate.Value.Month<3) {
+                    //Add Normal Non-Birthday Events, and Not repeating
+                  evts.AddRange(_eventService.GetAllEvents().Where(x=>
+                        x.TopicId!=1 && x.Date!=null && (x.RepeatYearly==null || x.RepeatYearly==false) && (x.Date.Value>=startDate.Value || x.Date.Value <= endDate.Value)).ToList());
+                    //Add Normal Non-Birthday Events, and repeating
                   evts.AddRange(_eventService.GetAllEvents().Where(x=>
                         x.TopicId!=1 && x.Date!=null && x.RepeatYearly==true && (x.Date.Value.Month>=startDate.Value.Month || x.Date.Value.Month <= endDate.Value.Month)).ToList());
-                else
+                }
+                else {
+                    //Add Normal Non-Birthday Events, and Not repeating
+                    evts.AddRange(_eventService.GetAllEvents().Where(x=> 
+                        (x.TopicId!=1 && x.Date!=null && (x.RepeatYearly==null || x.RepeatYearly==false) && x.Date.Value>=startDate.Value && x.Date.Value <= endDate.Value)).ToList());
+                    //Add Normal Non-Birthday Events, and repeating
                     evts.AddRange(_eventService.GetAllEvents().Where(x=> 
                         (x.TopicId!=1 && x.Date!=null && x.RepeatYearly==true && x.Date.Value.Month>=startDate.Value.Month && x.Date.Value.Month <= endDate.Value.Month)).ToList());
-                    
+                }
                     foreach (var item in evts)
                     {
                         if ((item.RepeatYearly==true) || (item.TopicId==1 && item.Date!=null))
