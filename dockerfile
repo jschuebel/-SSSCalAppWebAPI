@@ -1,24 +1,14 @@
-FROM mcr.microsoft.com/windows/servercore:ltsc2016-amd64
-
+#FROM mcr.microsoft.com/dotnet/core/aspnet:3.0 AS runtime
+#FROM mcr.microsoft.com/businesscentral/sandbox:ltsc2019
+FROM mcr.microsoft.com/dotnet/core/aspnet:2.1
 MAINTAINER Jim Schuebel <schuebelsoft@yahoo.com>
 
+# Install ASP.NET Core Runtime
+ENV Audience__Secret Y2F0Y2hlciUyMHdvbmclMjBsb3ZlJTIwLm5ldA==
+ENV ConnectionStrings__DefaultConnection Data Source=192.168.50.3;Integrated Security=False;User ID=jschuebel;Password=weeb;Connect Timeout=60;Encrypt=False;TrustServerCertificate=True;ApplicationIntent=ReadWrite;MultiSubnetFailover=False
+
+
 WORKDIR /app
-
-SHELL ["powershell", "-command"]
-
-
-COPY bin\Release\netcoreapp2.1\publish .
-
-
-# Expose ports
-
+COPY publish .
 EXPOSE 5000
-
-#ENV ASPNETCORE_URLS http://*:5000
-
-#HEALTHCHECK --interval=30s --timeout=3s --retries=1 CMD curl --silent --fail http://localhost:5000/hc || exit 1
-
-
-# Start
-
 ENTRYPOINT ["dotnet", "SSSCalAppWebAPI.dll"]

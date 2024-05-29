@@ -3,15 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Hosting;
 
-using Newtonsoft.Json;
 using Swashbuckle.AspNetCore.Swagger;
 using SSSCalApp.Infrastructure.DataContext;
 using SSSCalApp.Infrastructure.Repositories;
@@ -64,14 +63,19 @@ namespace SSSCalAppWebAPI
                 ClockSkew = TimeSpan.Zero,
                 RequireExpirationTime = true,
             };
-    services.AddAuthentication("Bearer")
+    services.AddAuthentication(sharedOptions =>
+{
+    sharedOptions.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    sharedOptions.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
             .AddJwtBearer("Bearer", options =>
             {
-                options.Authority = "http://localhost:5000";
+                //options.Authority = "http://localhost:3600";
                 options.RequireHttpsMetadata = false;
 
-                options.Audience = "api1";
-            });
+                options.Audience = "Family";
+                options.TokenValidationParameters = tokenValidationParameters;
+             });
 /*
             services.AddAuthentication(o =>
             {
@@ -102,14 +106,20 @@ namespace SSSCalAppWebAPI
                 }));
 
           
-
+            services.AddControllers()
+                .AddNewtonsoftJson(options =>
+                {
+                    options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
+                    options.SerializerSettings.MaxDepth = 3;
+                });
+/*
             services.AddMvc()
                 .SetCompatibilityVersion(CompatibilityVersion.Version_2_1)
                 .AddJsonOptions(options => {
                     options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
                     options.SerializerSettings.MaxDepth = 3;
                 });
-
+*/
 //bad practice : use user secrets or environment vars             options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"))
 
             services.AddDbContext<PersonContext>(options =>
@@ -122,11 +132,14 @@ namespace SSSCalAppWebAPI
            services.AddScoped<IPersonService, PersonService>();
            services.AddScoped<IEventService, EventService>();
            services.AddScoped<IGroupService, GroupService>();
+           services.AddScoped<IAddressRepository, AddressRepository>();
+           services.AddScoped<IAddressService, AddressService>();
           
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IHostEnvironment env)
         {
 
              if (env.IsDevelopment())
@@ -143,10 +156,17 @@ namespace SSSCalAppWebAPI
 //            app.UseCors(
 //                options => options.WithOrigins("http://localhost:52293/").AllowAnyMethod()
 //            );
-
+            app.UseRouting();
            // app.UseHttpsRedirection();
             app.UseAuthentication();
-            app.UseMvc();
+            app.UseAuthorization();
+            //2.1core   app.UseMvc();
+        app.UseEndpoints(endpoints =>
+        {
+            endpoints.MapControllerRoute("default", "{controller=Home}/{action=Index}");
+        });
+
+
         }
     }
 }
