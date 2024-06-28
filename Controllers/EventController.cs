@@ -112,7 +112,7 @@ namespace SSSCalAppWebAPI.Controllers
         //Errors = ModelState.SelectMany(x => x.Value.Errors)            .Select(x => x.ErrorMessage).ToArray();
         }
 
-
+        //var requests = $"?page=1&pageSize=99&sort[0][field]=Date&sort[0][dir]=asc&filter[logic]=and&filter[filters][0][field]=Date&filter[filters][0][operator]=gte&filter[filters][0][value]={start.ToShortDateString()}&filter[filters][1][field]=Date&filter[filters][1][operator]=lte&filter[filters][1][value]={end.ToShortDateString()}";
         // GET api/values
         [HttpGet]
         public ActionResult<IEnumerable<coreevent.Event>> Get([ModelBinder(binderType: typeof(SearchBinder))]coreevent.SearchRequest srch)
@@ -130,7 +130,8 @@ namespace SSSCalAppWebAPI.Controllers
                             startDate = ParseConvertDate(srch.FilterObjectWrapper.FilterObjects.ElementAt(0).Value1);
                             endtDate = ParseConvertDate(srch.FilterObjectWrapper.FilterObjects.ElementAt(1).Value1);
 
-                          evts = _eventService.GetAllEvents().Where(x=>(x.TopicId!=1 && x.Date!=null && x.Date>=startDate && x.Date <= endtDate)).ToList();
+//                          evts = _eventService.GetAllEvents().Where(x=>(x.TopicId!=1 && x.Date!=null && x.Date>=startDate && x.Date <= endtDate)).ToList();
+                          evts = _eventService.GetAllEvents().Where(x=>(x.Date!=null && x.Date>=startDate && x.Date <= endtDate)).ToList();
 //                        (x.TopicId==1 && x.Date!=null && x.Date.Value.Month>=DateTime.Now.Month)).OrderBy(x=>x.Date.Value.Month);
 
 
@@ -178,8 +179,8 @@ namespace SSSCalAppWebAPI.Controllers
                     }
                     
                     //IQueryable<coreevent.Event> query =evts.AsQueryable().Where(filtering).OrderBy(sorting);
-                    IQueryable<coreevent.Event> query =evts.AsQueryable().Where(filtering);
-
+                    IQueryable<coreevent.Event> query =evts.AsQueryable().Where(filtering).OrderBy(sorting);
+/*
                     //if filter and date range, handle birthdays
                     if (startDate!=null && endtDate!=null) {
                         evts= query.ToList();
@@ -187,13 +188,13 @@ namespace SSSCalAppWebAPI.Controllers
                         
                         foreach (var item in evts)
                         {
-                            if ((item.RepeatYearly==true) || (item.TopicId==1 && item.Date!=null))
+                            if (item.RepeatYearly==true) // cannot recall why I did this  || (item.TopicId==1 && item.Date!=null))
                                 item.Date= new DateTime(DateTime.Now.Year, item.Date.Value.Month, item.Date.Value.Day);
                         }
                         query =evts.AsQueryable();
                     }
                     query =query.OrderBy(sorting);
-
+*/
                     int RowCount = 0;
                     var newList = new List<coreevent.Event>();
                     try {

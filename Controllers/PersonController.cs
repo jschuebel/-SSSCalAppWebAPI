@@ -44,6 +44,8 @@ namespace SSSCalAppWebAPI.Controllers
               return BadRequest(ModelState);  
             }
         }
+https://www.schuebelsoftware.com/SSSCalWebAPI/api/person?page=1&pageSize=10&sort[0][field]=name&sort[0][dir]=asc&filter[logic]=and&filter[filters][0][field]=DateOfBirth&filter[filters][0][operator]=gte&filter[filters][0][value]=5/1/1970
+       
  */        
         [HttpGet]
         public ActionResult<IEnumerable<coreevent.Person>> Get([ModelBinder(binderType: typeof(SearchBinder))]coreevent.SearchRequest srch)
@@ -133,6 +135,28 @@ namespace SSSCalAppWebAPI.Controllers
         
         //Errors = ModelState.SelectMany(x => x.Value.Errors)            .Select(x => x.ErrorMessage).ToArray();
         }
+
+        [HttpGet("history")]
+        public ActionResult<List<coreevent.PersonHistory>> GetHistory()
+        {
+             List<coreevent.PersonHistory> hist = null;
+             try {
+                if (!ModelState.IsValid)
+                    throw new ArgumentException("ModelState must be invalid", nameof(ModelState));
+
+                  hist = _personService.GetHistory().ToList();
+
+
+                return Ok(hist);
+            }
+            catch(Exception ex) {
+
+              ModelState.AddModelError("Person:Gethistory", ex.Message);
+              return BadRequest(ModelState);  
+            }
+        
+        }
+
 
         // POST api/values
         [HttpPost]
